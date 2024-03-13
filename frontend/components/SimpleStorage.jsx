@@ -61,31 +61,7 @@ const SimpleStorage = () => {
     // error (non renommé) : il y a t-il une erreur ?
     // isPending renommé en setIsPending : est-on en train d'écrire dans le contrat ?
     // writeContract : on pourra appeler cette fonction pour ensuite vraiment écrire dans le contrat plus tard
-    const { data: hash, error, isPending: setIsPending, writeContract } = useWriteContract({
-        mutation: {
-            // Si ça a marché d'écrire dans le contrat
-            onSuccess: () => {
-                //Faire quelque chose ici si succès, par exemple un refetch
-                refetch();
-                getEvents();
-                toast({
-                    title: "Votre nombre a été inscrit dans la Blockchain",
-                    status: "success",
-                    duration: 3000,
-                    isClosable: true,
-                });
-            },
-            // Si erreur
-            onError: (error) => {
-                toast({
-                    title: error.message,
-                    status: "error",
-                    duration: 3000,
-                    isClosable: true,
-                });
-            },
-        },
-    });
+    const { data: hash, error, isPending: setIsPending, writeContract } = useWriteContract();
 
     // Lorsque l'utilisateur clique sur le bouton set
     const setTheNumber = async() => {
@@ -99,10 +75,35 @@ const SimpleStorage = () => {
     }
 
     // Equivalent de transaction.wait() en ethersjs, on récupère si la transaction est en train d'être intégré dans un bloc (isConfirming) et si ça a marché au final (isConfirmed), il faut passer en paramètre le hash de la transaction (voir ci-dessus)
-    const { isLoading: isConfirming, isSuccess: isConfirmed } = 
+    const { isLoading: isConfirming, isSuccess, error: errorConfirmation } = 
     useWaitForTransactionReceipt({ 
-      hash, 
+        hash,
     })
+
+    const refetchEverything = async() => {
+        await refetch();
+        await getEvents();
+    }
+
+    useEffect(() => {
+        if(isSuccess) {
+            toast({
+                title: "Votre nombre a été inscrit dans la Blockchain",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
+            refetchEverything();
+        }
+        if(errorConfirmation) {
+            toast({
+                title: errorConfirmation.message,
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
+        }
+    }, [isSuccess, errorConfirmation])
 
     // Check en direct si un évènement particulier est émis (vous pouvez décommenter pour voir le résultat au besoin)
     // useWatchContractEvent({
@@ -128,7 +129,7 @@ const SimpleStorage = () => {
             address: contractAddress,
             event: parseAbiItem('event NumberChanged(uint oldValue, uint newValue)'),
             // du premier bloc
-            fromBlock: 0n,
+            fromBlock: 5476668n,
             // jusqu'au dernier
             toBlock: 'latest' // Pas besoin valeur par défaut
         })
@@ -183,12 +184,18 @@ const SimpleStorage = () => {
                     Waiting for confirmation...
                 </Alert>
             }
-            {isConfirmed && 
+            {isSuccess && 
                 <Alert status='success' mt="1rem" mb="1rem">
                     <AlertIcon />
                     Transaction confirmed.
                 </Alert>
             }
+            {errorConfirmation && (
+                <Alert status='error' mt="1rem" mb="1rem">
+                    <AlertIcon />
+                    Error: {(errorConfirmation).shortMessage || errorConfirmation.message}
+                </Alert>
+            )}
             {error && (
                 <Alert status='error' mt="1rem" mb="1rem">
                     <AlertIcon />

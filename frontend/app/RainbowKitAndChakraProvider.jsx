@@ -1,25 +1,38 @@
 'use client';
-import { ChakraProvider } from '@chakra-ui/react'
-import '@rainbow-me/rainbowkit/styles.css';
 
+import '@rainbow-me/rainbowkit/styles.css';
+import { ChakraProvider } from '@chakra-ui/react'
 import {
-  getDefaultConfig,
-  RainbowKitProvider,
-} from '@rainbow-me/rainbowkit';
-import { WagmiProvider } from 'wagmi';
+    RainbowKitProvider,
+    getDefaultConfig,
+    getDefaultWallets,
+} from "@rainbow-me/rainbowkit";
 import {
-  hardhat
-} from 'wagmi/chains';
-import {
-  QueryClientProvider,
-  QueryClient,
-} from "@tanstack/react-query";
+    argentWallet,
+    ledgerWallet,
+    trustWallet,
+} from "@rainbow-me/rainbowkit/wallets";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider } from "wagmi";
+
+import { sepolia } from '@/utils/sepolia';
+
+const { wallets } = getDefaultWallets();
+
+const WALLET_CONNECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_ID || "";
 
 const config = getDefaultConfig({
-    appName: 'My RainbowKit App',
-    projectId: '03f8ec0f8ad40a9b543bb4a1051dd071',
-    chains: [hardhat],
-    ssr: true, // If your dApp uses server side rendering (SSR)
+  appName: "SimpleStorage",
+  projectId: WALLET_CONNECT_ID,
+  wallets: [
+      ...wallets,
+      {
+          groupName: "Other",
+          wallets: [argentWallet, trustWallet, ledgerWallet],
+      },
+  ],
+  chains: [sepolia],
+  ssr: true,
 });
 
 const queryClient = new QueryClient();
@@ -27,13 +40,13 @@ const queryClient = new QueryClient();
 const RainbowKitAndChakraProvider = ({ children }) => {
   return (
     <WagmiProvider config={config}>
-        <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider>
-                <ChakraProvider>
-                    {children}
-                </ChakraProvider>
-            </RainbowKitProvider>
-        </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider>
+          <ChakraProvider>
+            {children}
+          </ChakraProvider>
+        </RainbowKitProvider>
+      </QueryClientProvider>
     </WagmiProvider>
   )
 }
