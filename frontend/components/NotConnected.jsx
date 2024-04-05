@@ -2,16 +2,17 @@
 import {
     Alert,
     AlertIcon,
+    Flex
 } from '@chakra-ui/react'
 
 const NotConnected = () => {
   return (
-    <>
-        <Alert status='warning'>
-            <AlertIcon />
-            Please connect your Wallet.
-        </Alert>
-    </>
+    <Flex w="100%" h="100%">
+      <Alert status='warning'>
+          <AlertIcon />
+          Please connect your Wallet.
+      </Alert>
+    </Flex>
   )
 }
 

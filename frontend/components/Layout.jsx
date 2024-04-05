@@ -14,8 +14,10 @@ const Layout = ({ children }) => {
         <Flex
           grow="1"
           p="2rem"
+          alignItems="center" 
+          justifyContent="center"
         >
-            {children}
+          {children}
         </Flex>
         <Footer />
     </Flex>

@@ -2,6 +2,14 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Flex, Text, Input, Button, useToast, Heading, Spinner } from '@chakra-ui/react'
+import {
+    Alert,
+    AlertIcon,
+    AlertTitle,
+    AlertDescription,
+    Badge
+} from '@chakra-ui/react'
+import { Card, CardBody } from '@chakra-ui/react'
 
 // On importe les données du contrat
 import { contractAddress, contractAbi } from '@/constants'
@@ -15,13 +23,6 @@ useWaitForTransactionReceipt : Attendre que la transaction soit confirmée (équ
 useWatchContractEvent : Récupérer en temps réel si un évènement a été émis
 */
 import { useReadContract, useAccount, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent } from 'wagmi'
-
-import {
-    Alert,
-    AlertIcon,
-    AlertTitle,
-    AlertDescription,
-} from '@chakra-ui/react'
 
 // Permet de parser l'event
 import { parseAbiItem } from 'viem'
@@ -121,7 +122,6 @@ const SimpleStorage = () => {
     // })
 
     // Get all the events 
-    
     // Récupère tous les events, pour cela getLogs de Viem est de loin le plus efficace
     const getEvents = async() => {
         // On récupère tous les events NumberChanged
@@ -129,7 +129,7 @@ const SimpleStorage = () => {
             address: contractAddress,
             event: parseAbiItem('event NumberChanged(uint oldValue, uint newValue)'),
             // du premier bloc
-            fromBlock: 5476668n,
+            fromBlock: 0n,
             // jusqu'au dernier
             toBlock: 'latest' // Pas besoin valeur par défaut
         })
@@ -165,7 +165,7 @@ const SimpleStorage = () => {
             {getIsPending ? (
                 <Spinner />
             ) : (
-                <Text>Result : {numberGet?.toString()}</Text>
+                <Text><Text as='b'>The number in the Blockchain :</Text> {numberGet?.toString()}</Text>
             )}
         </Flex>
         <Heading as='h4' size='md' mt="2rem" mb="1rem">
@@ -215,9 +215,13 @@ const SimpleStorage = () => {
         >
             {/* Ici, il faut afficher la liste des events si on a des events. Il faut toujours avoir une clé unique au niveau des éléments d'un map dans reactjs, pour cela on peut utiliser aussi crypto.randomUUID() */}
             {events && events.map((event) => {
-                return <Flex key={crypto.randomUUID()}>
-                    Old Value : {event.oldValue} - New Value : {event.newValue}
-                </Flex>
+                return (
+                <Card key={crypto.randomUUID()} mb="1rem">
+                    <CardBody>
+                        <Badge colorScheme='green'>NumberChanged</Badge>
+                        <Text mt=".5rem">Old Value : <Text as="b">{event.oldValue}</Text>  | New Value : <Text as="b">{event.newValue}</Text></Text>
+                    </CardBody>
+                </Card>)
             })}
         </Flex>
     </Flex>
