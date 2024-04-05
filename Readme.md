@@ -14,7 +14,7 @@ Here is a basic repo to create your DApp.
 
 ### Launch Tests
 
-````yarn hardhat test```
+```yarn hardhat test```
 
 ### Deploy Smart Contract
 
